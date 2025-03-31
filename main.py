@@ -2,11 +2,22 @@
 
 import requests
 import os
+import time
 
 def read_webhook_url():
     path = os.environ.get("WEBHOOK_URL_PATH", "webhook.txt")
     with open(path, "r") as f:
         return f.read().strip()
+
+def read_application_logs():
+    path = os.environ.get("APPLICATION_LOGS_PATH", "/var/log/directory.log")
+    with open(path, "r") as f:
+        while True:
+            line = f.readline()
+            if not line:
+                time.sleep(3)
+                continue
+            yield line.rstrip()
 
 def send_discord_message(message):
     data = {
@@ -18,10 +29,17 @@ def send_discord_message(message):
     else:
         print(f"Failed to send message: {response.status_code}")
 
+def is_error(line):
+    return "ERROR" in line
 
 def main():
-    send_discord_message("foo!")
-
+    print("Starting up and reading logs...")
+    # Loop indefinitely reading latest application logs
+    logs = read_application_logs()
+    for line in logs:
+        print(f"[LINE] {line}")
+        if is_error(line):
+            send_discord_message(f"Error on directory: {line}")
 
 if __name__ == "__main__":
     main()
