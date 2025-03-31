@@ -3,6 +3,7 @@
 import requests
 import os
 import time
+import subprocess
 
 def read_webhook_url():
     path = os.environ.get("WEBHOOK_URL_PATH", "webhook.conf")
@@ -11,13 +12,21 @@ def read_webhook_url():
 
 def read_application_logs():
     path = os.environ.get("APPLICATION_LOGS_PATH", "/var/log/directory.log")
-    with open(path, "r") as f:
+    process = subprocess.Popen(
+        ['tail', '-f', '-n', '0', path],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        universal_newlines=True
+    )
+    
+    try:
         while True:
-            line = f.readline()
-            if not line:
-                time.sleep(3)
-                continue
-            yield line.rstrip()
+            line = process.stdout.readline()
+            if line:
+                yield line.rstrip()
+    except KeyboardInterrupt:
+        process.terminate()
+        process.wait()
 
 def send_discord_message(message):
     data = {
@@ -38,7 +47,6 @@ def main():
         # Loop indefinitely reading latest application logs
         logs = read_application_logs()
         for line in logs:
-            print(f"[LINE] {line}")
             if is_error(line):
                 send_discord_message(f"Error on directory: {line}")
     except Exception as e:
