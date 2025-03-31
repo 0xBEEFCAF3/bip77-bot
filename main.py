@@ -2,7 +2,6 @@
 
 import requests
 import os
-import time
 import subprocess
 
 def read_webhook_url():
