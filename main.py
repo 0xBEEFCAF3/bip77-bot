@@ -5,7 +5,7 @@ import os
 import time
 
 def read_webhook_url():
-    path = os.environ.get("WEBHOOK_URL_PATH", "webhook.txt")
+    path = os.environ.get("WEBHOOK_URL_PATH", "webhook.conf")
     with open(path, "r") as f:
         return f.read().strip()
 
