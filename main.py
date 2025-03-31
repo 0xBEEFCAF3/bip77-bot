@@ -34,12 +34,16 @@ def is_error(line):
 
 def main():
     print("Starting up and reading logs...")
-    # Loop indefinitely reading latest application logs
-    logs = read_application_logs()
-    for line in logs:
-        print(f"[LINE] {line}")
-        if is_error(line):
-            send_discord_message(f"Error on directory: {line}")
+    try:
+        # Loop indefinitely reading latest application logs
+        logs = read_application_logs()
+        for line in logs:
+            print(f"[LINE] {line}")
+            if is_error(line):
+                send_discord_message(f"Error on directory: {line}")
+    except Exception as e:
+        print(f"Error: {e}")
+        send_discord_message(f"Bot crashed: {e}")
 
 if __name__ == "__main__":
     main()
